@@ -2,6 +2,7 @@ package com.scienjus.queue.producer.aop;
 
 import com.scienjus.queue.producer.Producer;
 import com.scienjus.queue.producer.annotation.Topic;
+import com.scienjus.queue.util.Message;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -21,14 +22,14 @@ public class MessageHandler {
 
     @Around("@annotation(topic)")
     public Object around(ProceedingJoinPoint point, Topic topic) {
-        Object result = null;
+        Object content = null;
         try {
-            result = point.proceed();
-            producer.sendMessage(topic.value(), result);
+            content = point.proceed();
+            producer.sendMessage(topic.value(), new Message(content));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
-        return result;
+        return content;
     }
 
 }

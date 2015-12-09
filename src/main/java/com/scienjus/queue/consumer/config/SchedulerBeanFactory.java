@@ -29,6 +29,12 @@ public class SchedulerBeanFactory implements ApplicationContextAware {
 
     private Consumer consumer;
 
+    private int defaultMaxRetryTimes = 0;
+
+    public void setDefaultMaxRetryTimes(int defaultMaxRetryTimes) {
+        this.defaultMaxRetryTimes = defaultMaxRetryTimes;
+    }
+
     public void setConsumer(Consumer consumer) {
         this.consumer = consumer;
     }
@@ -53,7 +59,12 @@ public class SchedulerBeanFactory implements ApplicationContextAware {
                     OnMessage onMessage = method.getAnnotation(OnMessage.class);
                     String topic = onMessage.value();
                     ConsumeHandlerMethod consumeHandlerMethod = new ConsumeHandlerMethod(topic, method, bean);
-                    ConsumeWorker worker = new ConsumeWorker(consumeHandlerMethod, consumer);
+                    //设置最大重试次数
+                    int maxRetryTimes = onMessage.maxRetryTimes();
+                    if (maxRetryTimes == OnMessage.RetryTimes.USE_DEFAULT_MAX_RETRY_TIMES) {
+                        maxRetryTimes = this.defaultMaxRetryTimes;
+                    }
+                    ConsumeWorker worker = new ConsumeWorker(consumeHandlerMethod, consumer, maxRetryTimes);
 
                     //注册JobDetail
                     String jobDetailBeanName = buildJobDetailBeanName(consumeHandlerMethod);

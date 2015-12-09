@@ -1,8 +1,8 @@
 package com.scienjus.queue.consumer.impl;
 
 import com.scienjus.queue.consumer.Consumer;
-import com.scienjus.queue.util.SerializeUtil;
-import redis.clients.jedis.Jedis;
+import com.scienjus.queue.util.JedisUtil;
+import com.scienjus.queue.util.Message;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -17,19 +17,14 @@ public class RedisConsumer implements Consumer {
         this.jedisPool = jedisPool;
     }
 
-    public Object getMessage(String topic) {
-        return rpop(topic);
+    @Override
+    public Message getMessage(String topic) {
+        return (Message) JedisUtil.rpop(jedisPool, topic);
     }
 
-    private Object rpop(String topic) {
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            return SerializeUtil.unserialize(jedis.rpop(topic.getBytes()));
-        } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
-        }
+    @Override
+    public void retry(String topic, Message message) {
+        message.setFailureTimes(message.getFailureTimes() + 1);
+        JedisUtil.lpush(jedisPool, topic, message);
     }
 }
