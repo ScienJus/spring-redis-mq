@@ -19,7 +19,7 @@ public class MessageHandler {
         this.producer = producer;
     }
 
-    @Around("execution(@com.scienjus.queue.producer.annotation.Topic * *(..)) && @annotation(topic)")
+    @Around("@annotation(topic)")
     public Object around(ProceedingJoinPoint point, Topic topic) {
         Object result = null;
         try {
