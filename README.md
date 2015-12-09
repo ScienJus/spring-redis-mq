@@ -198,6 +198,8 @@ public class SayHelloConsumer {
 
 当`@OnMessage`消费者方法的返回值类型为`boolean`类型，并且执行的结果为`false`时，系统认定此消息消费失败。
 
+
+
 如果设置了方法的重试次数，系统会将这个消息重新插入到消息队列中（顺序排在最后）。
 
 当该消息的失败次数大于重试次数后，系统会抛弃掉这条消息。
@@ -205,6 +207,29 @@ public class SayHelloConsumer {
 通过`schedulerBeanFactory`的`defaultMaxRetryTimes`属性可以设置全局的重试次数。
 
 通过`@OnMessage`的`maxRetryTimes`属性可以设置每一个方法的重试次数。
+
+一个简单的例子：
+
+```
+@Consumer
+public class SayHelloConsumer {
+
+    @OnMessage(value = "new_user", maxRetryTimes = 3) //如果邮件发送失败，会尝试重新发送3次。
+    public boolean onNewUser(User user) {
+        try {
+            //发送邮件
+            MailSender.sendWelcomeMail(user.getEmail(), user.getNickname());
+            //发送成功，任务完成，返回true
+            retrun true;
+        } catch (Exception e) {
+            //发送失败，尝试重试，返回false
+            retrun false;
+        }
+    }
+}
+```
+
+当然，如果一个消费方法永远不会失败（或是失败后不需要重试），可以直接设置为`void`方法。
 
 ### 待办事项
 
