@@ -212,7 +212,7 @@ public class SayHelloConsumer {
 
 ```
 @Consumer
-public class SayHelloConsumer {
+public class NewUserConsumer {
 
     @OnMessage(value = "new_user", maxRetryTimes = 3) //如果邮件发送失败，会尝试重新发送3次。
     public boolean onNewUser(User user) {
