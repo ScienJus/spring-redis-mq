@@ -2,7 +2,7 @@ package com.scienjus.queue.consumer.impl;
 
 import com.scienjus.queue.consumer.Consumer;
 import com.scienjus.queue.util.JedisUtil;
-import com.scienjus.queue.util.Message;
+import com.scienjus.queue.model.Message;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -24,7 +24,6 @@ public class RedisConsumer implements Consumer {
 
     @Override
     public void retry(String topic, Message message) {
-        message.setFailureTimes(message.getFailureTimes() + 1);
         JedisUtil.lpush(jedisPool, topic, message);
     }
 }

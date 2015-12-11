@@ -2,7 +2,7 @@ package com.scienjus.queue.producer.impl;
 
 import com.scienjus.queue.producer.Producer;
 import com.scienjus.queue.util.JedisUtil;
-import com.scienjus.queue.util.Message;
+import com.scienjus.queue.model.Message;
 import redis.clients.jedis.JedisPool;
 
 /**

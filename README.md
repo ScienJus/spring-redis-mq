@@ -120,10 +120,10 @@ public SchedulerBeanFactory schedulerBeanFactory() {
 
 ```
 @Bean
-public MessageHandler messageHandler() {
-    MessageHandler messageHandler = new MessageHandler();
-    messageHandler.setProducer(producer());
-    return messageHandler;
+public ProducerWorker producerWorker() {
+    ProducerWorker producerWorker = new ProducerWorker();
+    producerWorker.setProducer(producer());
+    return producerWorker;
 }
 ```
 
@@ -139,12 +139,12 @@ public class SayHelloProducer {
     private Producer producer;
 
     public void sayHello(String name) {
-        producer.sendMessage("say_hello", name);
+        producer.sendMessage("say_hello", new Message(name));
     }
 }
 ```
 
-方法2：使用`@Topic`注解，`retrun`需要发送的对象（需要配置`messageHandler`）：
+方法2：使用`@ToQueue`注解，`retrun`需要发送的对象（需要配置`producerWorker`）：
 
 ```
 @Producer
@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDao userDao;
 
-    @Topic("new_user")  //添加新的用户后，将其发送到消息队列
+    @ToQueue(topic = "new_user")  //添加新的用户后，将其发送到消息队列
     public User insert(User user) {
         this.userDao.insert(user);
         return user;
@@ -173,9 +173,9 @@ public class SayHelloConsumer {
     private Consumer consumer;
 
     public void sayHello() {
-        String name;
-        while ((name = consumer.getMessage("say_hello")) != null) {
-            System.out.println("Hello ! " + name + " !");
+        Message message;
+        while ((message = consumer.getMessage("say_hello")) != null) {
+            System.out.println("Hello ! " + message.getContent() + " !");
         }
     }
 }
@@ -187,7 +187,7 @@ public class SayHelloConsumer {
 @Consumer
 public class SayHelloConsumer {
 
-    @OnMessage("say_hello")
+    @OnMessage(topic = "say_hello")
     public void onSayHello(String name) {
         System.out.println("Hello ! " + name + " !");
     }
@@ -196,25 +196,36 @@ public class SayHelloConsumer {
 
 **消费者的重试机制**
 
-当`@OnMessage`消费者方法的返回值类型为`boolean`类型，并且执行的结果为`false`时，系统认定此消息消费失败。
+当`@OnMessage`方法的返回值类型为`boolean`类型，并且执行的结果为`false`时，系统认定此消息执行失败。
 
+消息执行失败后，系统会将这个消息重新插入到消息队列中（顺序排在最后）。
 
+通过`@ToQueue`的`expire`属性可以设置消息的生存时间（单位为秒），默认为永不过期。
 
-如果设置了方法的重试次数，系统会将这个消息重新插入到消息队列中（顺序排在最后）。
-
-当该消息的失败次数大于重试次数后，系统会抛弃掉这条消息。
-
-通过`schedulerBeanFactory`的`defaultMaxRetryTimes`属性可以设置全局的重试次数。
-
-通过`@OnMessage`的`maxRetryTimes`属性可以设置每一个方法的重试次数。
+当消息的生存时间超过后还没有消费成功，系统将会丢掉这个消息。
 
 一个简单的例子：
 
 ```
+//生产者
+
+@Producer
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserDao userDao;
+
+    @ToQueue(topic = "new_user", expire = 24 * 3600)  //添加新的用户后，将其发送到消息队列，消息的生存时间是24小时
+    public User insert(User user) {
+        this.userDao.insert(user);
+        return user;
+    }
+}
+
 @Consumer
 public class NewUserConsumer {
 
-    @OnMessage(value = "new_user", maxRetryTimes = 3) //如果邮件发送失败，会尝试重新发送3次。
+    @OnMessage(value = "new_user")  //如果邮件发送失败，需要尝试重新发送。
     public boolean onNewUser(User user) {
         try {
             //发送邮件
@@ -231,10 +242,12 @@ public class NewUserConsumer {
 
 当然，如果一个消费方法永远不会失败（或是失败后不需要重试），可以直接设置为`void`方法。
 
+PS：之前版本使用重试次数控制失败处理。但是系统修复需要的是时间，而重试次数很有可能会被浪费掉，因此改为了生存时间。
+
 ### 待办事项
 
-- [ ] 生产者发送消息失败的处理
-- [x] 消费者任务失败的处理（设置最大失败次数，重新插入队列）
+- [x] 消息处理失败的处理（重新插入队列，设置消息的生存周期）
+- [ ] 将队列分为两个阶段，等待投递和等待接收
 - [ ] 监控页面
 
 ### 帮助

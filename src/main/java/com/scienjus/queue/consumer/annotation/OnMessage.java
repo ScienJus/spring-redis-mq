@@ -11,11 +11,5 @@ import java.lang.annotation.*;
 @Documented
 public @interface OnMessage {
 
-    String value();
-
-    int maxRetryTimes() default RetryTimes.USE_DEFAULT_MAX_RETRY_TIMES;
-
-    class RetryTimes {
-        public static final int USE_DEFAULT_MAX_RETRY_TIMES = -1;
-    }
+    String topic();
 }
