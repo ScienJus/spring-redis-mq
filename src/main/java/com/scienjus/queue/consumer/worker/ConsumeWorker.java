@@ -2,8 +2,9 @@ package com.scienjus.queue.consumer.worker;
 
 
 import com.scienjus.queue.consumer.Consumer;
-import com.scienjus.queue.consumer.domain.ConsumeHandlerMethod;
-import com.scienjus.queue.util.Message;
+import com.scienjus.queue.consumer.model.ConsumeHandlerMethod;
+import com.scienjus.queue.model.Message;
+import com.scienjus.queue.producer.annotation.ToQueue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,12 +19,9 @@ public class ConsumeWorker {
 
     private Consumer consumer;
 
-    private int maxRetryTimes;
-
-    public ConsumeWorker(ConsumeHandlerMethod consumeHandlerMethod, Consumer consumer, int maxRetryTimes) {
+    public ConsumeWorker(ConsumeHandlerMethod consumeHandlerMethod, Consumer consumer) {
         this.consumeHandlerMethod = consumeHandlerMethod;
         this.consumer = consumer;
-        this.maxRetryTimes = maxRetryTimes;
     }
 
     public void invoke() {
@@ -34,13 +32,14 @@ public class ConsumeWorker {
         Message message;
         while ((message = consumer.getMessage(topic)) != null) {
             try {
+                if (message.getExpireAt() != ToQueue.ExpireTime.NEVER_EXPIRES && message.getExpireAt() < System.currentTimeMillis()) {
+                    //说明这是一个过期任务，记录日志后丢弃掉
+                    continue;
+                }
                 if (method.getReturnType().isAssignableFrom(Boolean.TYPE)) {
-                    boolean isSuccess = (boolean) method.invoke(bean, message.getContent());
-                    if (!isSuccess) {
-                        //记录日志
-                        if (message.getFailureTimes() < maxRetryTimes) {
-                            consumer.retry(topic, message);
-                        }
+                    if (!((boolean) method.invoke(bean, message.getContent()))) {
+                        //如果消息执行失败，重试
+                        consumer.retry(topic, message);
                     }
                 } else {
                     method.invoke(bean, message);

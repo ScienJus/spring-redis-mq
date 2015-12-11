@@ -1,6 +1,6 @@
 package com.scienjus.queue.consumer;
 
-import com.scienjus.queue.util.Message;
+import com.scienjus.queue.model.Message;
 
 /**
  * @author ScienJus

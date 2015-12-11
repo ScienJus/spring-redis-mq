@@ -9,8 +9,13 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Topic {
+public @interface ToQueue {
 
-    String value();
+    String topic();
 
+    int expire() default ExpireTime.NEVER_EXPIRES;
+
+    class ExpireTime {
+        public static final int NEVER_EXPIRES = -1;
+    }
 }

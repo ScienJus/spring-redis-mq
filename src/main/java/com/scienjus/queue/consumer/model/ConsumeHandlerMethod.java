@@ -1,4 +1,4 @@
-package com.scienjus.queue.consumer.domain;
+package com.scienjus.queue.consumer.model;
 
 import java.lang.reflect.Method;
 

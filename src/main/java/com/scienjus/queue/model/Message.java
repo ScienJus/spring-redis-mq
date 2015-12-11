@@ -1,4 +1,6 @@
-package com.scienjus.queue.util;
+package com.scienjus.queue.model;
+
+import com.scienjus.queue.producer.annotation.ToQueue;
 
 import java.io.Serializable;
 
@@ -10,15 +12,15 @@ public class Message implements Serializable {
 
     private Object content;
 
-    private int failureTimes;
+    private long expireAt;
 
-    public Message(Object content, int failureTimes) {
+    public Message(Object content, long expireAt) {
         this.content = content;
-        this.failureTimes = failureTimes;
+        this.expireAt = expireAt;
     }
 
     public Message(Object content) {
-        this(content, 0);
+        this(content, ToQueue.ExpireTime.NEVER_EXPIRES);
     }
 
     public Object getContent() {
@@ -29,11 +31,11 @@ public class Message implements Serializable {
         this.content = content;
     }
 
-    public int getFailureTimes() {
-        return failureTimes;
+    public long getExpireAt() {
+        return expireAt;
     }
 
-    public void setFailureTimes(int failureTimes) {
-        this.failureTimes = failureTimes;
+    public void setExpireAt(long expireAt) {
+        this.expireAt = expireAt;
     }
 }
