@@ -16,7 +16,7 @@ mvn install:install-file
 -DartifactId=spring-redis-mq
 -Dversion=1.0-SNAPSHOT
 -Dpackaging=jar  
--Dfile=/path/to/jar/spring-authorization-manager.jar
+-Dfile=/path/to/jar/spring-redis-mq.jar
 ```
 
 所有依赖 Jar：
@@ -181,7 +181,7 @@ public class SayHelloConsumer {
 }
 ```
 
-方法2：为类添加`@Consumer`注解，为对应的方法添加`@OnMessage`注解（主要配置`schedulerBeanFactory`）：
+方法2：为类添加`@Consumer`注解，为对应的方法添加`@OnMessage`注解（需要配置`schedulerBeanFactory`）：
 
 ```
 @Consumer
@@ -254,6 +254,12 @@ PS：之前版本使用重试次数控制失败处理。但是系统修复需要
 
 联系方式：xie_enlong@foxmail.com
 
-一个简单的[Demo][1]
+由于 Redis 本身的限制，这个项目并不适合使用在生产环境中，在此推荐 Redis 作者开发的消息队列 Disque。一些介绍：
 
-[1]: https://github.com/ScienJus/spring-redis-mq-demo
+ - 该项目的地址：[Disque, an in-memory, distributed job queue][1]
+ - 该项目的中文介绍：[Disque 使用教程][2]
+ - Java 的客户端实现（Jedis 的作者开发）：[Jedisque][3]
+
+[1]: https://github.com/antirez/disque
+[2]: http://disquebook.com/
+[3]: https://github.com/xetorthio/jedisque
