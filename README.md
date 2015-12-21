@@ -252,14 +252,17 @@ PS：之前版本使用重试次数控制失败处理。但是系统修复需要
 
 ### 帮助
 
-联系方式：xie_enlong@foxmail.com
+我的邮箱：`i@scienjus.com`
 
 由于 Redis 本身的限制，这个项目并不适合使用在生产环境中，在此推荐 Redis 作者开发的消息队列 Disque。一些介绍：
 
  - 该项目的地址：[Disque, an in-memory, distributed job queue][1]
  - 该项目的中文介绍：[Disque 使用教程][2]
  - Java 的客户端实现（Jedis 的作者开发）：[Jedisque][3]
+ - 与这个项目用法相同的Disque实现：[Spring Dsique][4]
 
 [1]: https://github.com/antirez/disque
 [2]: http://disquebook.com/
 [3]: https://github.com/xetorthio/jedisque
+[4]: https://github.com/scienjus/spring-disque
+
